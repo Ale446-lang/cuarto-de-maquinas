@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuarto de Máquinas · Hardware y setups</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8edf1;--card:#f7f9fb;--ink:#13202b;--mut:#51606d;--line:#b9c5cf;--acc:#1c47e8;--acc-ink:#fff;--ok:#0c7a5a;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10171d;--card:#18222b;--ink:#e6edf3;--mut:#94a3b0;--line:#2c3a46;--acc:#6f8cff;--acc-ink:#0b1020;--ok:#3ecf9f;--bad:#ff8a80}}
+*,*:before,*:after{box-sizing:inherit}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Archivo,system-ui,sans-serif;line-height:1.5}
+header,main{max-width:1180px;margin:auto;padding:0 20px}
+header{padding-top:36px}
+h1{font-stretch:62%;font-weight:800;font-size:clamp(2.6rem,9vw,6rem);line-height:.92;margin:0 0 14px;letter-spacing:-.01em;max-width:11em}
+header p{max-width:52ch;color:var(--mut);margin:0 0 8px}
+.brand{font-weight:700;margin-bottom:28px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.layout{display:grid;grid-template-columns:1fr 380px;gap:24px;margin:28px 0 60px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+button{font:inherit;cursor:pointer}
+.tab{border:1px solid var(--line);background:none;color:var(--ink);padding:6px 14px;border-radius:99px}
+.tab[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.p{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.p.on{outline:2px solid var(--acc)}
+.p h3{margin:0;font-size:1.02rem;font-weight:650}
+.spec{color:var(--mut);font-size:.86rem;margin:0}
+.price{font-weight:750;font-size:1.2rem}
+.stock{font-size:.82rem;color:var(--mut)}.stock.low{color:var(--bad)}
+.btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:4px;padding:9px 14px;font-weight:650;margin-top:auto}
+.btn:disabled{opacity:.45;cursor:not-allowed}.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+aside{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+aside h2{margin:0 0 4px;font-size:1.3rem}
+.slot{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+.slot em{color:var(--mut);font-style:normal}
+.chk{list-style:none;padding:0;margin:12px 0;font-size:.88rem}
+.chk li{padding:3px 0}.chk .ok{color:var(--ok)}.chk .bad{color:var(--bad)}.chk .pe{color:var(--mut)}
+.tot{display:flex;justify-content:space-between;font-weight:750;font-size:1.25rem;margin:10px 0}
+.timer{font-size:.88rem;color:var(--mut);margin:6px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;max-width:90vw;display:none;z-index:5}
+@media(prefers-reduced-motion:no-preference){.p{transition:outline-color .15s}}
+</style></head><body>
+<header>
+<div class="brand"><span>Cuarto de Máquinas</span><span>Envíos a todo el país</span></div>
+<h1>Armá tu setup. Chequeamos que todo encaje.</h1>
+<p>Elegí una pieza por categoría. Revisamos socket, memoria, fuente y tamaño de la placa de video antes de que reserves.</p>
+</header>
+<main><div class="layout">
+<section aria-label="Catálogo"><div class="tabs" id="tabs"></div><div class="grid" id="grid"></div></section>
+<aside aria-live="polite"><h2>Tu setup</h2><div class="timer" id="timer">Elegí una pieza para empezar.</div>
+<div id="slots"></div><ul class="chk" id="chk"></ul><div id="tot"></div>
+<div class="row"><button class="btn" id="ok" disabled>Confirmar reserva</button><button class="btn ghost" id="clr">Vaciar</button></div>
+</aside></div></main><div id="toast" role="status"></div>
+<script>
+const CATS={cpu:"Procesador",mb:"Placa madre",ram:"Memoria",gpu:"Placa de video",psu:"Fuente",case:"Gabinete"};
+const RN={RN1:"RN1 Socket",RN2:"RN2 Memoria",RN3:"RN3 Fuente",RN4:"RN4 Placa de video"};
+let S;try{S=localStorage.getItem("sid");if(!S){S=crypto.randomUUID();localStorage.setItem("sid",S)}}catch(e){S=Math.random().toString(36).slice(2)}
+let prods=[],setup={items:[],checks:[],subtotal:0,discount:0,total:0,complete:false,compatible:false},tab="cpu";
+const $=id=>document.getElementById(id),usd=n=>"US$ "+n.toLocaleString("es-AR");
+const call=async(u,m="GET",b)=>{const r=await fetch(u,{method:m,headers:{"Content-Type":"application/json"},body:b&&JSON.stringify(b)});const j=await r.json();if(!r.ok)throw new Error(j.error||"Error del servidor");return j};
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",3500)}
+async function load(){try{[prods,setup]=await Promise.all([call("/api/products?session="+S),call("/api/setup?session="+S)]);draw()}catch(e){toast("No se pudo conectar con el servidor.")}}
+function label(p){const s=p.specs;return s.sock?s.sock+(s.ram?" · "+s.ram:"")+(s.tdp?" · "+s.tdp+" W":""):s.ram||(s.w?s.w+" W":s.len?s.len+" mm · "+s.tdp+" W":"GPU hasta "+s.max+" mm")}
+function draw(){
+ $("tabs").innerHTML=Object.entries(CATS).map(([k,v])=>`<button class="tab" aria-pressed="${k===tab}" data-t="${k}">${v}</button>`).join("");
+ $("grid").innerHTML=prods.filter(p=>p.category===tab).map(p=>`<article class="p${p.mine?" on":""}"><h3>${p.name}</h3><p class="spec">${label(p)}</p><div class="price">${usd(p.price)}</div>
+ <div class="stock${p.free<=1?" low":""}">${p.mine?"Reservado para vos":p.free>0?(p.free===1?"Última unidad":p.free+" disponibles"):"Reservado por otro cliente"}</div>
+ <button class="btn" data-a="${p.id}" ${!p.mine&&p.free<1?"disabled":""}>${p.mine?"Quitar":"Reservar en mi setup"}</button></article>`).join("");
+ $("slots").innerHTML=Object.entries(CATS).map(([k,v])=>{const p=setup.items.find(x=>x.category===k);return`<div class="slot"><span>${v}</span><span>${p?p.name+" · "+usd(p.price):"<em>sin elegir</em>"}</span></div>`}).join("");
+ $("chk").innerHTML=setup.checks.map(c=>`<li class="${c.status==="ok"?"ok":c.status==="bad"?"bad":"pe"}">${c.status==="ok"?"✔":c.status==="bad"?"✖":"…"} ${RN[c.rn]} · ${c.status==="ok"?"compatible":c.status==="bad"?c.msg:"pendiente"}</li>`).join("");
+ $("tot").innerHTML=`<div class="stock">Subtotal ${usd(setup.subtotal)}</div>${setup.discount?`<div class="stock" style="color:var(--ok)">RN7 Setup completo y compatible: −8% (${usd(setup.discount)})</div>`:`<div class="stock">RN7 Con las 6 piezas compatibles tenés 8% de descuento.</div>`}<div class="tot"><span>Total</span><span>${usd(setup.total)}</span></div>`;
+ $("ok").disabled=!(setup.complete&&setup.compatible);tick()}
+let expired=false;
+function tick(){if(!setup.expiresAt){$("timer").textContent="Elegí una pieza para empezar.";return}
+ const s=Math.max(0,Math.round((new Date(setup.expiresAt)-Date.now())/1000));
+ if(!s){if(!expired){expired=true;toast("Tu reserva venció (RN5). Las piezas volvieron al stock.");load()}return}
+ expired=false;$("timer").textContent="RN5 Tu reserva vence en "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+setInterval(tick,1000);setInterval(load,10000);
+document.addEventListener("click",async e=>{const t=e.target;
+ if(t.dataset.t){tab=t.dataset.t;draw()}
+ if(t.dataset.a){const p=prods.find(x=>x.id==t.dataset.a);
+  try{if(p.mine)await call("/api/holds/"+p.id+"?session="+S,"DELETE");else await call("/api/holds","POST",{session:S,productId:p.id})}catch(err){toast(err.message)}
+  load()}});
+$("clr").onclick=async()=>{await call("/api/holds?session="+S,"DELETE");load()};
+$("ok").onclick=async()=>{try{const r=await call("/api/orders","POST",{session:S});toast("Reserva n.º "+r.orderId+" confirmada. Te contactamos para coordinar el pago y el envío.")}catch(err){toast(err.message)}load()};
+load();
+</script></body></html>
